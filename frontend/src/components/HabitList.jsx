@@ -2,42 +2,35 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-function HabitList({ habits, setHabits }) {
+function HabitList({ habits, setHabits, deleteHabit }) {
   const [progresses, setProgresses] = useState({});
   const [hoursSpent, setHoursSpent] = useState({});
   const navigate = useNavigate();
 
-  const handleDelete = async (id) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:8080/api/habitos/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setHabits((prev) => prev.filter((habit) => habit.id !== id));
-    } catch (error) {
-      console.error('Error al eliminar el hábito:', error);
-    }
+  const handleDelete = (id) => {
+    deleteHabit(id);
   };
 
   useEffect(() => {
     const fetchHabitsAndProgresses = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8080/api/habitos', { 
+        const response = await axios.get(`http://localhost:8080/api/habitos`, { 
           headers: { Authorization: `Bearer ${token}` }
         });
         setHabits(response.data);
 
         const progressesData = {};
         for (const habit of response.data) {
-          const progressResponse = await axios.get(`http://localhost:8080/api/progresos/${habit.id}`);
+          const progressResponse = await axios.get(`http://localhost:8080/api/progresos/${habit.id}`, { 
+            headers: { Authorization: `Bearer ${token}` }
+          });
           progressesData[habit.id] = progressResponse.data;
         }
         setProgresses(progressesData);
 
-        // Mostrar alerta si es necesario
         response.data.forEach(habit => {
-          if (habit.mostrarAlerta==false) {
+          if (habit.mostrarAlerta) {
             alert(`Es momento de cumplir el hábito: ${habit.nombre}`);
           }
         });
@@ -54,12 +47,14 @@ function HabitList({ habits, setHabits }) {
       const progressData = {
         fecha: new Date().toISOString().split('T')[0],
         cumplido: true,
-        horas: hoursSpent[habitId] || 0  // Aquí se toman las horas
+        horas: hoursSpent[habitId] || 0 
       };
 
-      console.log('Enviando datos de progreso:', progressData); // Asegúrate de que las horas sean correctas
+      console.log('Enviando datos de progreso:', progressData);
       
-      const response = await axios.post(`http://localhost:8080/api/progresos/${habitId}`, progressData);
+      const response = await axios.post(`http://localhost:8080/api/progresos/${habitId}`, progressData, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
       
       setProgresses((prev) => ({
         ...prev,
@@ -93,7 +88,7 @@ function HabitList({ habits, setHabits }) {
             <p>Frecuencia: {habit.frecuencia}</p>
             <p>Notificaciones: {habit.notificaciones ? 'Sí' : 'No'}</p>
 
-            <div>
+            <div className="progress-container">
               <h4>Progreso:</h4>
               {progresses[habit.id] && progresses[habit.id].length > 0 ? (
                 progresses[habit.id].map((progress, index) => (
@@ -115,7 +110,7 @@ function HabitList({ habits, setHabits }) {
                 value={hoursSpent[habit.id] || 0}
                 onChange={(e) => handleHoursChange(habit.id, e.target.value)}
               />
-              <span>{hoursSpent[habit.id] || 0} horas</span>
+              <span className="range-label">{hoursSpent[habit.id] || 0} horas</span>
             </label>
 
             <button onClick={() => handleMarkAsCompleted(habit.id)}>Marcar como cumplido hoy</button>

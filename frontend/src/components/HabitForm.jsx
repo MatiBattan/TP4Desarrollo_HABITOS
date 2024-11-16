@@ -4,23 +4,30 @@ import axios from 'axios';
 function HabitForm({ setHabits }) {
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [frecuencia, setFrecuencia] = useState('diario'); // Valor inicial del desplegable
+  const [frecuencia, setFrecuencia] = useState('diario');
   const [notificaciones, setNotificaciones] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+
       const newHabit = {
         nombre,
         descripcion,
         frecuencia,
         notificaciones,
       };
+
       const token = localStorage.getItem('token');
+
       const response = await axios.post('http://localhost:8080/api/habitos', newHabit, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setHabits((prev) => [...prev, response.data]);
+
+      setHabits(prevHabits => {
+        return Array.isArray(prevHabits) ? [...prevHabits, response.data] : [response.data];
+      });
+
       setNombre('');
       setDescripcion('');
       setFrecuencia('diario');
@@ -29,6 +36,7 @@ function HabitForm({ setHabits }) {
       console.error('Error al agregar el hábito:', error);
     }
   };
+  
   
   return (
     <form onSubmit={handleSubmit}>

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function Historial() {
+  const navigate = useNavigate();
   const [deletedHabits, setDeletedHabits] = useState([]);
 
   useEffect(() => {
@@ -16,9 +18,10 @@ function Historial() {
         console.error("Error al obtener el historial de hábitos eliminados:", error);
       }
     };
-
+  
     fetchDeletedHabits();
   }, []);
+  
 
   const restoreHabit = async (id) => {
     try {
@@ -26,7 +29,6 @@ function Historial() {
       await axios.put(`http://localhost:8080/api/habitos/restaurar/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      // Actualiza el estado eliminando el hábito restaurado del historial
       setDeletedHabits(deletedHabits.filter(h => h.id !== id));
     } catch (error) {
       console.error("Error al restaurar el hábito:", error);
@@ -39,8 +41,7 @@ function Historial() {
       await axios.delete(`http://localhost:8080/api/habitos/eliminar-permanente/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
-      // Actualiza el estado eliminando el hábito definitivamente
+
       setDeletedHabits(deletedHabits.filter(h => h.id !== id));
     } catch (error) {
       console.error("Error al eliminar el hábito permanentemente:", error);
@@ -48,12 +49,12 @@ function Historial() {
   };
 
   return (
-    <div>
+    <div className="historial-container">
       <h2>Historial de Hábitos Eliminados</h2>
       {deletedHabits.length === 0 ? (
         <p>No hay hábitos eliminados para mostrar.</p>
       ) : (
-        <table>
+        <table className="historial-table">
           <thead>
             <tr>
               <th>Nombre</th>
@@ -79,6 +80,9 @@ function Historial() {
           </tbody>
         </table>
       )}
+      <div className="button-container">
+        <button onClick={() => navigate('/dashboard')}>Volver</button>
+      </div>
     </div>
   );
 }

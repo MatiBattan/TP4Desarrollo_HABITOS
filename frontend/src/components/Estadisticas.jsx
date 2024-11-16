@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function Estadisticas() {
   const { habitId } = useParams();
   const [progreso, setProgreso] = useState([]);
   const [intervalo, setIntervalo] = useState("Diario");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProgressData = async () => {
@@ -24,7 +26,6 @@ function Estadisticas() {
     fetchProgressData();
   }, [habitId, intervalo]);
 
-  // Función para agrupar y promediar datos en función del intervalo
   const procesarDatos = (datos, intervalo) => {
     switch(intervalo) {
       case "Semanal":
@@ -41,7 +42,6 @@ function Estadisticas() {
     }
   };
 
-  // Función para agrupar por semanas
   const agruparPorSemana = (datos) => {
     const resultado = [];
     let semana = [];
@@ -66,7 +66,6 @@ function Estadisticas() {
     return resultado;
   };
 
-  // Función para agrupar por meses
   const agruparPorMes = (datos) => {
     const resultado = [];
     let mesActual = datos[0].fecha.getMonth();
@@ -88,7 +87,6 @@ function Estadisticas() {
       }
     });
 
-    // Último mes
     if (horasMes.length) {
       const promedioHoras = horasMes.reduce((a, b) => a + b, 0) / horasMes.length;
       resultado.push({
@@ -100,7 +98,6 @@ function Estadisticas() {
     return resultado;
   };
 
-  // Función para agrupar por años
   const agruparPorAnio = (datos) => {
     const resultado = [];
     let anioActual = datos[0].fecha.getFullYear();
@@ -120,7 +117,6 @@ function Estadisticas() {
       }
     });
 
-    // Último año
     if (horasAnio.length) {
       const promedioHoras = horasAnio.reduce((a, b) => a + b, 0) / horasAnio.length;
       resultado.push({
@@ -135,20 +131,27 @@ function Estadisticas() {
   return (
     <div>
       <h2>Estadísticas de Progreso</h2>
-      <select value={intervalo} onChange={(e) => setIntervalo(e.target.value)}>
-        <option value="Diario">Diario</option>
-        <option value="Semanal">Semanal</option>
-        <option value="Mensual">Mensual</option>
-        <option value="Anual">Anual</option>
-      </select>
-      <BarChart width={600} height={300} data={progreso}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="fecha" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="horas" fill="#82ca9d" />
-      </BarChart>
+      <div className="chart-container">
+        <select value={intervalo} onChange={(e) => setIntervalo(e.target.value)}>
+          <option value="Diario">Diario</option>
+          <option value="Semanal">Semanal</option>
+          <option value="Mensual">Mensual</option>
+          <option value="Anual">Anual</option>
+        </select>
+
+        <BarChart width={600} height={300} data={progreso}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="fecha" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="horas" fill="#82ca9d" />
+        </BarChart>
+        
+        <div className="button-container">
+          <button onClick={() => navigate('/dashboard')}>Volver</button>
+        </div>
+      </div>
     </div>
   );
 }

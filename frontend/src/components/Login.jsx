@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom'; // Importar Link
+import { Link } from 'react-router-dom';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -35,7 +35,6 @@ function Login() {
       />
       <button type="submit">Iniciar sesión</button>
 
-      {/* Agregado mensaje para redirigir a la página de registro */}
       <p>¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link></p>
     </form>
   );

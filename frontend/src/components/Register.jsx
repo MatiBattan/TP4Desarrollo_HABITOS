@@ -30,7 +30,6 @@ function Register() {
     }
   };
 
-  // Manejador para el botón de regresar al login
   const handleGoToLogin = () => {
     navigate('/');
   };
