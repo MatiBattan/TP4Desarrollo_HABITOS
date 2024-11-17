@@ -16,7 +16,6 @@ router.get('/', async (req, res) => {
       return res.json({ message: 'No hay hábitos para este usuario', habitos: [] });
     }
 
-    // Verificar si se necesita notificación
     const fechaHoy = new Date();
     habitos.forEach(habito => {
       if (habito.notificaciones) {
@@ -48,9 +47,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-
-
-
 router.post('/', async (req, res) => {
   try {
     const usuarioId = req.user ? req.user.id : 1;
@@ -63,7 +59,7 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    const habito = await Habito.findByPk(req.params.id);
+    const habito = await Habito.findOne({ where: { id: req.params.id, usuarioId: req.user.id } });
     if (habito) {
       await habito.update(req.body);
       res.json(habito);
@@ -77,12 +73,11 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    const habito = await Habito.findByPk(req.params.id);
+    const habito = await Habito.findOne({ where: { id: req.params.id, usuarioId: req.user.id } });
     if (!habito) {
       return res.status(404).json({ error: 'Hábito no encontrado' });
     }
 
-    // Marcar el hábito como eliminado en lugar de eliminarlo de la base de datos
     habito.eliminado = true;
     habito.fechaEliminacion = new Date();
     await habito.save();
@@ -95,12 +90,11 @@ router.delete('/:id', async (req, res) => {
 
 router.delete('/eliminar-permanente/:id', async (req, res) => {
   try {
-    const habito = await Habito.findByPk(req.params.id);
+    const habito = await Habito.findOne({ where: { id: req.params.id, usuarioId: req.user.id } });
     if (!habito) {
       return res.status(404).json({ error: 'Hábito no encontrado' });
     }
 
-    // Eliminar de la base de datos en lugar de solo marcarlo
     await habito.destroy();
     res.json({ mensaje: 'Hábito eliminado permanentemente' });
   } catch (error) {
@@ -108,36 +102,37 @@ router.delete('/eliminar-permanente/:id', async (req, res) => {
   }
 });
 
-
 router.get('/historial', async (req, res) => {
   try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'Usuario no autenticado' });
+    }
+
     const habitosEliminados = await Habito.findAll({
-    where: { eliminado: true },
-    attributes: ['id', 'nombre', 'descripcion', 'fechaCreacion', 'fechaEliminacion'],
+      where: { usuarioId: req.user.id, eliminado: true },
+      attributes: ['id', 'nombre', 'descripcion', 'fechaCreacion', 'fechaEliminacion'],
     });
     res.json(habitosEliminados);
   } catch (error) {
     manejarError(res, error, 'Error al obtener el historial de hábitos eliminados');
   }
-  });
+});
 
-  router.put('/restaurar/:id', async (req, res) => {
+router.put('/restaurar/:id', async (req, res) => {
   try {
-    const habito = await Habito.findByPk(req.params.id);
+    const habito = await Habito.findOne({ where: { id: req.params.id, usuarioId: req.user.id } });
     if (!habito || !habito.eliminado) {
-    return res.status(404).json({ error: 'Hábito no encontrado o no está eliminado' });
+      return res.status(404).json({ error: 'Hábito no encontrado o no está eliminado' });
     }
-  
-    // Restaurar el hábito
+
     habito.eliminado = false;
     habito.fechaEliminacion = null;
     await habito.save();
-  
+
     res.json({ mensaje: 'Hábito restaurado exitosamente' });
   } catch (error) {
     manejarError(res, error, 'Error al restaurar el hábito');
   }
-  });
-
+});
 
 module.exports = router;

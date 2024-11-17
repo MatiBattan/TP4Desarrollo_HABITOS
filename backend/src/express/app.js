@@ -1,19 +1,11 @@
 const express = require('express');
-const cors = require('cors'); // Importa cors
+const cors = require('cors');
 const { sequelize } = require('../sequelize');
 const authenticateToken = require('./middlewares/authenticateToken');
 
 const app = express();
 
-// Configura CORS para permitir solicitudes desde cualquier origen
 app.use(cors()); 
-
-// O configura CORS con opciones específicas
-// app.use(cors({
-//   origin: 'http://localhost:3000', // Cambia esto al dominio de tu frontend
-//   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//   credentials: true,
-// }));
 
 app.use(express.json());
 

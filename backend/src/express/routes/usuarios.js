@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken'); // Para el manejo de tokens JWT
-const { Usuario } = require('../../sequelize/index'); // Asegúrate de importar correctamente el modelo de Usuario
+const jwt = require('jsonwebtoken'); 
+const { Usuario } = require('../../sequelize/index');
 const { manejarError } = require('../helpers');
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
@@ -9,10 +9,9 @@ const { generateToken } = require('../utils/tokenManager');
 
 const SECRET_KEY = process.env.JWT_SECRET;
 
-// Nueva ruta para registrar un usuario en /register
 router.post('/register', async (req, res) => {
   try {
-    console.log('Datos recibidos en /register:', req.body); // Log para ver los datos que llegan al backend
+    console.log('Datos recibidos en /register:', req.body);
     
     const { nombre, email, contraseña } = req.body;
     if (!nombre || !email || !contraseña) {
@@ -20,7 +19,6 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Faltan campos' });
     }
 
-    // Encriptar la contraseña antes de guardarla
     const hashedPassword = await bcrypt.hash(contraseña, 10);
     const nuevoUsuario = await Usuario.create({ nombre, email, contraseña: hashedPassword });
     console.log('Usuario registrado exitosamente:', nuevoUsuario);
@@ -32,7 +30,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Ruta para obtener la lista de usuarios
 router.get('/', async (req, res) => {
   try {
     const usuarios = await Usuario.findAll();
@@ -42,7 +39,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Ruta para obtener un usuario por ID
 router.get('/:id', async (req, res) => {
   try {
     const usuario = await Usuario.findByPk(req.params.id);
@@ -56,7 +52,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Ruta de inicio de sesión
 router.post('/login', async (req, res) => {
   try {
     const { email, contraseña } = req.body;

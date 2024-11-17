@@ -9,8 +9,8 @@ module.exports = (sequelize, DataTypes) => {
 		allowNull: false,
 	  },
 	  horas: {
-		type: DataTypes.INTEGER, // Tipo de dato para almacenar horas
-		allowNull: true, // Puedes hacer que sea opcional o requerido según prefieras
+		type: DataTypes.INTEGER,
+		allowNull: true,
 	  },
 	});
   
